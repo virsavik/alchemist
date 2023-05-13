@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  api:
+    container_name: alchemist_api-dev
+    image: alchemist_api-dev:latest
+    restart: on-failure
+    depends_on:
+      pg:
+        condition: service_healthy
+    environment:
+      APP_NAME: alchemist
+      APP_VERSION: v0.0.1
+      APP_PORT: 8080
+      APP_PG_URL: postgres://alchemist:@pg:5432/alchemist?sslmode=disable
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    networks:
+      - alchemist
+
+  pg:
+    container_name: alchemist_db-dev
+    image: postgres:11-alpine
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 120s
+      timeout: 30s
+      retries: 3
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: alchemist
+      POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      - alchemist
+
+  pgmigrate:
+    container_name: alchemist_dbmigrate-dev
+    image: migrate/migrate:latest
+    restart: "no"
+    entrypoint: ""
+    environment:
+      TZ: UTC
+      DB_URL: "postgres://alchemist:@pg:5432/alchemist?sslmode=disable"
+    depends_on:
+      pg:
+        condition: service_healthy
+    volumes:
+      - ./data/migrations:/migrations
+    networks:
+      - alchemist
+
+networks:
+  alchemist:

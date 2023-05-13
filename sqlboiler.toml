@@ -1,0 +1,15 @@
+output   = "internal/repository/entity"
+pkgname  = "entity"
+wipe     = true
+no-tests = true
+add-enum-types = true
+
+[psql]
+  dbname = "alchemist"
+  host   = "pg"
+  port   = 5432
+  user   = "alchemist"
+  pass   = ""
+  schema = "public"
+  sslmode = "disable"
+  blacklist = ["schema_migrations"]
